@@ -5,34 +5,47 @@ export default function CloudWorkflowGen({ targets }) {
   const [copied, setCopied] = useState(false);
 
   const generateYaml = () => {
-    const curlSteps = targets.map((t) => {
-      return `      - name: Keep-Alive ${t.name}
+    let curlSteps = '';
+
+    if (targets && targets.length > 0) {
+      curlSteps = targets.map((t) => {
+        return `      - name: Ping ${t.name}
         run: |
-          echo "Pinging ${t.name} (${t.url})..."
-          curl -s -X ${t.httpMethod || 'GET'} "${t.url}" -o /dev/null -w "HTTP %{http_code} - Total Time: %{time_total}s\\n"
+          echo "Sending keep-alive pulse to ${t.name} (${t.url})..."
+          curl -s -X ${t.httpMethod || 'GET'} "${t.url}" -o /dev/null -w "HTTP Status: %{http_code} | Total Latency: %{time_total}s\\n"
 `;
-    }).join('\n');
+      }).join('\n');
+    } else {
+      curlSteps = `      - name: Ping Example Render Backend
+        run: |
+          echo "Sending keep-alive pulse to Render backend..."
+          curl -s -X GET "https://your-backend-api.onrender.com/api/health" -o /dev/null -w "HTTP Status: %{http_code} | Latency: %{time_total}s\\n"
+
+      - name: Ping Example Koyeb Backend
+        run: |
+          echo "Sending keep-alive pulse to Koyeb backend..."
+          curl -s -X GET "https://your-app.koyeb.app/health" -o /dev/null -w "HTTP Status: %{http_code} | Latency: %{time_total}s\\n"`;
+    }
 
     return `name: KeepItAlive 24/7 Cloud Keep-Alive
 
 on:
   schedule:
-    # Runs every 10 minutes automatically 24/7/365
+    # Executes automatically every 10 minutes 24/7/365 (Free GitHub Cloud Infrastructure)
     - cron: '*/10 * * * *'
-  workflow_dispatch: # Manual trigger from GitHub UI
+  workflow_dispatch: # Allows manual trigger anytime directly from GitHub UI
 
 jobs:
   keep_alive:
-    name: Ping Applications & Prevent Sleeping
+    name: Ping Applications & Prevent Container Sleep
     runs-on: ubuntu-latest
     steps:
       - name: Display Timestamp
         run: echo "Starting scheduled ping batch at $(date -u)"
 
-${curlSteps || `      - name: Ping Default Target
-        run: curl -s "https://student-app-backend.onrender.com/api/health" -o /dev/null -w "%{http_code}"`}
-      - name: Summary
-        run: echo "All applications successfully pinged. Server containers kept active!"
+${curlSteps}
+      - name: Batch Summary
+        run: echo "All applications pinged successfully. Server containers kept warm in memory!"
 `;
   };
 
@@ -68,14 +81,14 @@ ${curlSteps || `      - name: Ping Default Target
   };
 
   return (
-    <div className="bento-card bento-col-12" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(16, 185, 129, 0.06), var(--bg-bento))', border: '1px solid rgba(99, 102, 241, 0.25)' }}>
+    <div className="bento-card bento-col-12" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(16, 185, 129, 0.04), var(--bg-bento))', border: '1px solid rgba(99, 102, 241, 0.25)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.35rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.6rem', lineHeight: 1.3 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.6rem', lineHeight: 1.3 }}>
             <GitBranch size={22} className="text-emerald-400" /> 24/7 GitHub Actions Cloud Worker Generator
           </div>
           <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5 }}>
-            Zero PC upkeep. GitHub Actions pings your servers every 10 minutes automatically 24/7/365 from cloud infrastructure.
+            Zero PC upkeep. GitHub Actions pings your servers every 10 minutes automatically 24/7/365 from GitHub's free cloud infrastructure.
           </p>
         </div>
 
@@ -91,13 +104,13 @@ ${curlSteps || `      - name: Ping Default Target
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem' }}>
-        <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1.5rem', borderRadius: 'var(--radius-inner)', border: '1px solid var(--border-light)' }}>
-          <h4 style={{ color: '#818cf8', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'var(--font-mono)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            <Terminal size={16} /> 3-Step Setup
+        <div style={{ background: 'rgba(0,0,0,0.35)', padding: '1.4rem', borderRadius: 'var(--radius-inner)', border: '1px solid var(--border-light)' }}>
+          <h4 style={{ color: '#818cf8', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'var(--font-mono)', fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <Terminal size={15} /> 3-Step GitHub Setup
           </h4>
           <ol style={{ paddingLeft: '1.2rem', fontSize: '0.85rem', color: '#d1d5db', display: 'flex', flexDirection: 'column', gap: '0.85rem', lineHeight: 1.5 }}>
             <li>
-              In your GitHub repo, create directory:
+              In your GitHub repository, create directory:
               <br />
               <code style={{ background: '#12141d', padding: '2px 8px', borderRadius: '4px', color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>
                 .github/workflows/
@@ -107,10 +120,10 @@ ${curlSteps || `      - name: Ping Default Target
               Create file: <code style={{ background: '#12141d', padding: '2px 8px', borderRadius: '4px', color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>keep_it_alive.yml</code>
             </li>
             <li>
-              Paste the code on the right & push!
+              Paste the generated workflow code on the right & commit!
               <br />
               <span style={{ color: '#34d399', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                <ShieldCheck size={12} /> Completely free 24/7 cloud pinging active.
+                <ShieldCheck size={12} /> Free 24/7 cloud pinging active.
               </span>
             </li>
           </ol>
