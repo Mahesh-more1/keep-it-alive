@@ -1,6 +1,8 @@
 # ⚡ KeepItAlive — Universal Server Anti-Sleep & Keep-Alive Studio
 
-> **An open-source, Editorial Bento Keep-Alive & Anti-Sleep Web Studio designed to prevent free-tier cloud platforms (Render, Koyeb, Glitch, Supabase, Railway, Fly.io, Replit) from putting your web applications to sleep.**
+> **An open-source, Editorial Bento Keep-Alive Studio designed to prevent free-tier cloud platforms (Render, Koyeb, Glitch, Supabase, Railway, Fly.io, Replit) from putting your web applications to sleep.**
+
+🌐 **Live Demo Website:** [https://mahesh-more1.github.io/keep-it-alive/](https://mahesh-more1.github.io/keep-it-alive/)
 
 ---
 
@@ -20,12 +22,12 @@ When a user visits your application after inactivity, the host must spin up the 
 
 ## ✨ Features
 
+- 🌐 **Live Web Application**: Hosted on GitHub Pages at [https://mahesh-more1.github.io/keep-it-alive/](https://mahesh-more1.github.io/keep-it-alive/)
 - 🎨 **Modern Editorial Minimalist & Bento Tech UI**: Clean 12-column Bento grid architecture with **Plus Jakarta Sans** and **Outfit** typography.
 - ⚡ **Multi-Platform Target Manager**: Supports Render, Koyeb, Glitch, Supabase, MongoDB Atlas, Railway, Fly.io, Replit, Back4App, Vercel, and Custom APIs.
 - 📊 **Real-Time Latency Spectrum**: Visualizes response times (in ms) of your last 10 pings per application with instant color indicators.
 - 📜 **Live Telemetry Log Stream**: Full activity log table with timestamped HTTP codes, response durations, search filter, and CSV export.
 - 🤖 **24/7 GitHub Actions Worker Generator**: 1-click workflow generator (`keep_it_alive.yml`) that pings your backends automatically from GitHub's free cloud infrastructure—**even when your PC is turned off!**
-- 🔊 **Web Audio Synthesized Chime**: Soft real-time audio chime feedback on ping completion.
 
 ---
 
@@ -46,11 +48,15 @@ When a user visits your application after inactivity, the host must spin up the 
 
 ## 🚀 Quick Start Guide
 
-### 1. Clone & Run Locally
+### Live Web Application
+Use the hosted app directly at:  
+👉 **[https://mahesh-more1.github.io/keep-it-alive/](https://mahesh-more1.github.io/keep-it-alive/)**
+
+### Clone & Run Locally
 
 ```bash
 # Clone repository
-git clone https://github.com/YOUR_GITHUB_USERNAME/keep-it-alive.git
+git clone https://github.com/Mahesh-more1/keep-it-alive.git
 cd keep-it-alive
 
 # Install dependencies
@@ -64,7 +70,7 @@ Open **`http://localhost:5190`** in your browser.
 
 ---
 
-## 🤖 2. Setting Up 24/7 GitHub Actions Cloud Worker
+## 🤖 Setting Up 24/7 GitHub Actions Cloud Worker
 
 To keep your servers active **24/7 without keeping your computer on**:
 
@@ -73,54 +79,7 @@ To keep your servers active **24/7 without keeping your computer on**:
    .github/workflows/
    ```
 2. Create a file named **`keep_it_alive.yml`**.
-3. Copy the workflow YAML code generated inside the **24/7 Cloud Worker** tab of KeepItAlive Studio:
-
-```yaml
-name: KeepItAlive 24/7 Cloud Keep-Alive
-
-on:
-  schedule:
-    # Runs every 10 minutes automatically 24/7/365 (Free GitHub Cloud)
-    - cron: '*/10 * * * *'
-  workflow_dispatch: # Allows manual trigger from GitHub UI
-
-jobs:
-  keep_alive:
-    name: Ping Applications & Prevent Container Sleep
-    runs-on: ubuntu-latest
-    steps:
-      - name: Display Timestamp
-        run: echo "Starting scheduled ping batch at $(date -u)"
-
-      - name: Ping My Backend API
-        run: |
-          curl -s -X GET "https://your-backend-api.onrender.com/api/health" -o /dev/null -w "HTTP Status: %{http_code} | Latency: %{time_total}s\n"
-
-      - name: Batch Summary
-        run: echo "All target applications successfully pinged!"
-```
-
-4. Push to GitHub! GitHub Actions will run this scheduled workflow every 10 minutes for free.
-
----
-
-## 💡 Best Practices for Backend Developers
-
-To minimize server load and database queries during keep-alive pings, add a dedicated lightweight health endpoint in your backend:
-
-### Express.js / Node.js
-```javascript
-app.get('/api/health', (req, res) => {
-  res.status(200).send('OK');
-});
-```
-
-### Python / Flask
-```python
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    return 'OK', 200
-```
+3. Copy the workflow YAML code generated inside the **24/7 Cloud Worker** tab of KeepItAlive Studio.
 
 ---
 
