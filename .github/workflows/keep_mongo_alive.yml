@@ -1,0 +1,66 @@
+name: Keep MongoDB Atlas Alive
+
+on:
+  schedule:
+    # Runs every 7 days — well within MongoDB Atlas's 30-day pause limit
+    - cron: '0 10 */7 * *'
+  workflow_dispatch: # Allow manual trigger from GitHub Actions tab anytime
+
+jobs:
+  ping_mongo:
+    name: Direct MongoDB Atlas Keep-Alive Ping
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Display Timestamp
+        run: echo "Starting MongoDB Atlas keep-alive ping at $(date -u)"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install MongoDB Driver
+        run: npm install mongodb
+
+      - name: Ping MongoDB Atlas Cluster Directly
+        run: |
+          node -e "
+          const { MongoClient } = require('mongodb');
+
+          async function keepAlive() {
+            if (!process.env.MONGO_URI) {
+              console.error('ERROR: MONGO_URI secret is not set! Go to GitHub repo Settings → Secrets → Actions and add MONGO_URI.');
+              process.exit(1);
+            }
+
+            const client = new MongoClient(process.env.MONGO_URI, {
+              serverSelectionTimeoutMS: 10000,
+              connectTimeoutMS: 10000,
+            });
+
+            try {
+              console.log('Connecting to MongoDB Atlas...');
+              await client.connect();
+
+              // Direct admin ping — resets Atlas 30-day inactivity timer
+              const result = await client.db('admin').command({ ping: 1 });
+              console.log('MongoDB Atlas ping response:', JSON.stringify(result));
+              console.log('SUCCESS: Atlas cluster is awake and active!');
+              console.log('30-day inactivity countdown has been RESET.');
+            } catch (err) {
+              console.error('FAILED to connect to MongoDB Atlas:', err.message);
+              process.exit(1);
+            } finally {
+              await client.close();
+              console.log('Connection closed cleanly.');
+            }
+          }
+
+          keepAlive();
+          "
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+
+      - name: Done
+        run: echo "MongoDB Atlas keep-alive completed at $(date -u). Next ping in 7 days."
