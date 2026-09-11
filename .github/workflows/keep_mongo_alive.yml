@@ -23,37 +23,31 @@ jobs:
       - name: Install MongoDB Driver
         run: npm install mongodb
 
-      - name: Ping MongoDB Atlas Cluster Directly
+      - name: Ping Cluster 1 — StudentMart (MONGO_URI)
         run: |
           node -e "
           const { MongoClient } = require('mongodb');
 
           async function keepAlive() {
             if (!process.env.MONGO_URI) {
-              console.error('ERROR: MONGO_URI secret is not set! Go to GitHub repo Settings → Secrets → Actions and add MONGO_URI.');
+              console.error('ERROR: MONGO_URI secret is not set!');
               process.exit(1);
             }
-
             const client = new MongoClient(process.env.MONGO_URI, {
               serverSelectionTimeoutMS: 10000,
               connectTimeoutMS: 10000,
             });
-
             try {
-              console.log('Connecting to MongoDB Atlas...');
+              console.log('Connecting to Cluster 1 (StudentMart)...');
               await client.connect();
-
-              // Direct admin ping — resets Atlas 30-day inactivity timer
               const result = await client.db('admin').command({ ping: 1 });
-              console.log('MongoDB Atlas ping response:', JSON.stringify(result));
-              console.log('SUCCESS: Atlas cluster is awake and active!');
-              console.log('30-day inactivity countdown has been RESET.');
+              console.log('Cluster 1 ping response:', JSON.stringify(result));
+              console.log('SUCCESS: Cluster 1 (StudentMart) is awake! 30-day countdown RESET.');
             } catch (err) {
-              console.error('FAILED to connect to MongoDB Atlas:', err.message);
+              console.error('FAILED to connect to Cluster 1:', err.message);
               process.exit(1);
             } finally {
               await client.close();
-              console.log('Connection closed cleanly.');
             }
           }
 
@@ -62,5 +56,38 @@ jobs:
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
 
+      - name: Ping Cluster 2 — Social Media Pulls (MONGO_URI_2)
+        run: |
+          node -e "
+          const { MongoClient } = require('mongodb');
+
+          async function keepAlive() {
+            if (!process.env.MONGO_URI_2) {
+              console.error('ERROR: MONGO_URI_2 secret is not set!');
+              process.exit(1);
+            }
+            const client = new MongoClient(process.env.MONGO_URI_2, {
+              serverSelectionTimeoutMS: 10000,
+              connectTimeoutMS: 10000,
+            });
+            try {
+              console.log('Connecting to Cluster 2 (Social Media Pulls)...');
+              await client.connect();
+              const result = await client.db('admin').command({ ping: 1 });
+              console.log('Cluster 2 ping response:', JSON.stringify(result));
+              console.log('SUCCESS: Cluster 2 (Social Media Pulls) is awake! 30-day countdown RESET.');
+            } catch (err) {
+              console.error('FAILED to connect to Cluster 2:', err.message);
+              process.exit(1);
+            } finally {
+              await client.close();
+            }
+          }
+
+          keepAlive();
+          "
+        env:
+          MONGO_URI_2: ${{ secrets.MONGO_URI_2 }}
+
       - name: Done
-        run: echo "MongoDB Atlas keep-alive completed at $(date -u). Next ping in 7 days."
+        run: echo "Both MongoDB Atlas clusters pinged successfully at $(date -u). Next ping in 7 days."
