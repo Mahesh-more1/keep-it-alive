@@ -1,0 +1,28 @@
+name: KeepItAlive 24/7 Cloud Keep-Alive
+
+on:
+  schedule:
+    # Runs every 10 minutes automatically 24/7/365 (Free GitHub Cloud Infrastructure)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger anytime from GitHub Actions tab
+
+jobs:
+  keep_alive:
+    name: Ping Applications & Prevent Container Sleep
+    runs-on: ubuntu-latest
+    steps:
+      - name: Display Timestamp
+        run: echo "Starting scheduled ping batch at $(date -u)"
+
+      - name: Ping Pulse Social Media Backend
+        run: |
+          echo "Sending keep-alive pulse to Pulse Social Media Backend..."
+          curl -s -X GET "https://pulse-backend-oepp.onrender.com" -o /dev/null -w "HTTP Status: %{http_code} | Total Latency: %{time_total}s\n"
+
+      - name: Ping StudentMart Backend
+        run: |
+          echo "Sending keep-alive pulse to StudentMart Backend..."
+          curl -s -X GET "https://campusmart-api-zx74.onrender.com" -o /dev/null -w "HTTP Status: %{http_code} | Total Latency: %{time_total}s\n"
+
+      - name: Batch Summary
+        run: echo "Both backends pinged successfully at $(date -u). Render containers kept warm!"
