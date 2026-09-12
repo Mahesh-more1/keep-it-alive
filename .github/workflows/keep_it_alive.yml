@@ -8,7 +8,7 @@ on:
 
 jobs:
   keep_alive:
-    name: Ping Applications & Prevent Container Sleep
+    name: Ping Applications and Prevent Container Sleep
     runs-on: ubuntu-latest
     steps:
       - name: Display Timestamp
@@ -17,12 +17,14 @@ jobs:
       - name: Ping Pulse Social Media Backend
         run: |
           echo "Sending keep-alive pulse to Pulse Social Media Backend..."
-          curl -s -X GET "https://pulse-backend-oepp.onrender.com" -o /dev/null -w "HTTP Status: %{http_code} | Total Latency: %{time_total}s\n"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://pulse-backend-oepp.onrender.com")
+          echo "Pulse Backend - HTTP Status: $STATUS"
 
       - name: Ping StudentMart Backend
         run: |
           echo "Sending keep-alive pulse to StudentMart Backend..."
-          curl -s -X GET "https://campusmart-api-zx74.onrender.com" -o /dev/null -w "HTTP Status: %{http_code} | Total Latency: %{time_total}s\n"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "https://campusmart-api-zx74.onrender.com")
+          echo "StudentMart Backend - HTTP Status: $STATUS"
 
       - name: Batch Summary
         run: echo "Both backends pinged successfully at $(date -u). Render containers kept warm!"
